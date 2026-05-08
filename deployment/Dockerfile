@@ -15,5 +15,5 @@ RUN uv sync
 # Expose
 EXPOSE 8080
 
-# Run
-CMD ["uv", "run", "python", "-c", "from universe_ide import cosmos; print(cosmos(1000))"]
+# Run server
+CMD ["python", "-m", "http.server", "8080", "--directory", "."]
