@@ -1,22 +1,19 @@
 
-FROM python:3.11-slim
+FROM python:3.13-slim
 
-WORKDIR /workspace
+WORKDIR /app
 
-# Install system deps
-RUN apt-get update && apt-get install -y \
-    git curl docker.io \
-    && rm -rf /var/lib/apt/lists/*
+# Install uv
+RUN pip install uv
 
-# Install Python deps
-COPY pyproject.toml .
-RUN pip install --no-cache-dir -e .
-
-# Copy application
+# Copy files
 COPY . .
 
-# Expose port
+# Install deps
+RUN uv sync
+
+# Expose
 EXPOSE 8080
 
-# Run command
-CMD ["python", "-m", "universe_ide", "serve"]
+# Run
+CMD ["uv", "run", "python", "-c", "from universe_ide import cosmos; print(cosmos(1000))"]
