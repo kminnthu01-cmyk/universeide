@@ -1,0 +1,159 @@
+# Universe IDE Configuration
+# Edit this file to customize your Universe IDE
+
+# ============================================
+# AGENT CONFIGURATION
+# ============================================
+
+# Default number of parallel agents
+DEFAULT_NUM_AGENTS = 100
+
+# Max agents (for rate limiting)
+MAX_AGENTS = 1000
+
+# Agent model (one of: anthropic, openai, google, xai, deepseek, local)
+DEFAULT_PROVIDER = "anthropic"
+
+# Models by provider
+MODELS = {
+    "anthropic": "claude-sonnet-4-20250505",
+    "openai": "gpt-4o",
+    "google": "gemini-2.5-pro",
+    "xai": "grok-2-1212",
+    "deepseek": "deepseek-chat",
+}
+
+
+# ============================================
+# ORCHESTRATION CONFIGURATION
+# ============================================
+
+# Swarm specializations
+SPECIALIZATIONS = [
+    "architect",    # System design
+    "coder",       # Implementation
+    "prover",      # Testing
+    "debugger",    # Bug fixing
+    "optimizer",   # Performance
+    "security",   # Security
+    "reviewer",   # Code review
+    "documenter", # Documentation
+]
+
+# Task timeout in seconds
+TASK_TIMEOUT = 300
+
+# Retry failed tasks
+AUTO_RETRY = true
+
+# Max retries
+MAX_RETRIES = 3
+
+
+# ============================================
+# API CONFIGURATION  
+# ============================================
+
+# Server host
+API_HOST = "0.0.0.0"
+
+# Server port
+API_PORT = 8080
+
+# Enable WebSocket
+WEBSOCKET_ENABLED = true
+
+# Rate limiting
+RATE_LIMIT_REQUESTS = 100
+RATE_LIMIT_WINDOW = 60  # seconds
+
+
+# ============================================
+# SECURITY CONFIGURATION
+# ============================================
+
+# Enable security scanning
+SECURITY_SCAN_ENABLED = true
+
+# Security rules severity
+SECURITY_RULES = {
+    "critical": ["sql_injection", "command_injection", "code_injection"],
+    "high": ["hardcoded_secret", "path_traversal"],
+    "medium": ["weak_crypto"],
+    "low": [],
+}
+
+# Files to exclude from scanning
+EXCLUDE_PATTERNS = [
+    "*.min.js",
+    "*.css",
+    "node_modules/*",
+    ".venv/*",
+]
+
+# Max file size to scan (bytes)
+MAX_FILE_SIZE = 10_000_000
+
+
+# ============================================
+# TOOLS CONFIGURATION
+# ============================================
+
+# Enabled tools
+ENABLED_TOOLS = [
+    "file_editor",
+    "terminal", 
+    "browser",
+    "git",
+    "docker",
+    "search",
+]
+
+# Terminal allowed commands
+ALLOWED_COMMANDS = [
+    "python",
+    "npm",
+    "git",
+    "curl",
+    "ls",
+    "cat",
+    "grep",
+]
+
+# Blocked commands (dangerous)
+BLOCKED_COMMANDS = [
+    "rm -rf /",
+    ":(){:|:&};:",  # Fork bomb
+    "dd if=/dev/zero",
+]
+
+
+# ============================================
+# LOGGING CONFIGURATION
+# ============================================
+
+# Log level (DEBUG, INFO, WARNING, ERROR)
+LOG_LEVEL = "INFO"
+
+# Log file
+LOG_FILE = "universe-ide.log"
+
+# Max log size (MB)
+LOG_MAX_SIZE = 10
+
+# Number of log backups
+LOG_BACKUPS = 5
+
+
+# ============================================
+# ENVIRONMENT VARIABLES
+# ============================================
+
+# Set these in your environment or .env file
+
+# ANTHROPIC_API_KEY=sk-...      # For Anthropic
+# OPENAI_API_KEY=sk-...        # For OpenAI  
+# GOOGLE_API_KEY=...           # For Google
+
+# WORKSPACE_ROOT=/path/to/work  # Default workspace
+# CONFIG_FILE=~/.universe-ide  # Config file location

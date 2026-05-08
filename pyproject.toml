@@ -1,0 +1,25 @@
+[project]
+name = "universe-ai"
+version = "1.0.0"
+description = "The Ultimate AI Agentic Platform - Universe Physics Powered"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "openhands-sdk>=1.21.1",
+]
+
+[project.scripts]
+universe = "universe_cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["universe"]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.3",
+    "pytest-asyncio>=1.3.0",
+]
