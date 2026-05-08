@@ -15,5 +15,5 @@ RUN uv sync
 # Expose
 EXPOSE 8080
 
-# Run server
-CMD ["python", "-m", "http.server", "8080", "--directory", "."]
+# Run API server
+CMD ["python", "universe_server.py"]

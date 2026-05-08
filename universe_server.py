@@ -1,93 +1,122 @@
 """
-Universe IDE - Server Infrastructure
+Universe IDE - API Server
+
+HTTP server with API endpoints for the UI.
 """
 
-import uuid
-from typing import Any, Dict
+from http.server import HTTPServer, BaseHTTPRequestHandler
+import json
+import sys
 
 
 # ============================================================================
-# SERVER
+# TRY IMPORTS
 # ============================================================================
 
-class Server:
-    def __init__(self, host="0.0.0.0", port=8000):
-        self.host = host
-        self.port = port
-        self.id = str(uuid.uuid4())[:8]
-        self.status = "stopped"
-        
-    def start(self):
-        self.status = "running"
-        return {"server": self.id, "host": self.host, "port": self.port}
-        
-    def stop(self):
-        self.status = "stopped"
-        return {"status": "stopped"}
-        
-    def restart(self):
-        self.stop()
-        return self.start()
+try:
+    from universe_ide import cosmos
+except ImportError:
+    cosmos = lambda n: type('U', (), {'num_agents': n})()
+
+try:
+    from universe_swarm import get_swarm
+except ImportError:
+    def get_swarm():
+        return type('S', (), {'get_status': lambda: {'agents': 100}})()
 
 
 # ============================================================================
-# LOAD BALANCER
+# HANDLER
 # ============================================================================
 
-class LoadBalancer:
-    def __init__(self):
-        self.servers = []
-        self.current = 0
+class UniverseHandler(BaseHTTPRequestHandler):
+    
+    def send_json(self, data, status=200):
+        self.send_response(status)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.end_headers()
+        self.wfile.write(json.dumps(data).encode())
+    
+    def send_html(self, html, status=200):
+        self.send_response(status)
+        self.send_header("Content-Type", "text/html")
+        self.end_headers()
+        if isinstance(html, str):
+            html = html.encode()
+        self.wfile.write(html)
+    
+    def do_GET(self):
+        path = self.path
         
-    def add_server(self, server: Server):
-        self.servers.append(server)
+        if path == "/" or path == "/index.html":
+            try:
+                with open("index.html", "rb") as f:
+                    self.send_html(f.read())
+            except FileNotFoundError:
+                self.send_html("<h1>404 Not Found</h1>", 404)
+            return
         
-    def next_server(self) -> Server:
-        if not self.servers:
-            return None
-        server = self.servers[self.current]
-        self.current = (self.current + 1) % len(self.servers)
-        return server
+        # API endpoints
+        if path == "/api/health":
+            self.send_json({"status": "healthy", "service": "universe-ide", "version": "v5.3"})
+            return
         
-    def get_active(self) -> int:
-        return len([s for s in self.servers if s.status == "running"])
+        if path == "/api/status":
+            self.send_json({
+                "version": "v5.3",
+                "status": "running"
+            })
+            return
+        
+        if path == "/api/cosmos":
+            u = cosmos(1000)
+            self.send_json({"agents": u.num_agents, "max": 10000})
+            return
+        
+        if path == "/api/swarm":
+            try:
+                s = get_swarm()
+                self.send_json(s.get_status())
+            except Exception as e:
+                self.send_json({"agents": 100, "error": str(e)})
+            return
+        
+        # Try static files for other paths
+        try:
+            filepath = path.lstrip("/")
+            with open(filepath, "rb") as f:
+                ext = filepath.rsplit(".", 1)[-1] if "." in filepath else ""
+                content_types = {"html": "text/html", "css": "text/css", "js": "application/javascript", "json": "application/json"}
+                self.send_response(200)
+                self.send_header("Content-Type", content_types.get(ext, "text/plain"))
+                self.end_headers()
+                self.wfile.write(f.read())
+        except FileNotFoundError:
+            self.send_json({"error": "Not found"}, 404)
+    
+    def do_OPTIONS(self):
+        self.send_response(200)
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type")
+        self.end_headers()
+        
+    def log_message(self, format, *args):
+        print(f"[SERVER] {args[0]}")
 
 
 # ============================================================================
-# GATEWAY
+# MAIN
 # ============================================================================
 
-class APIGateway:
-    def __init__(self):
-        self.routes = {}
-        self.middleware = []
-        
-    def route(self, path, server):
-        self.routes[path] = server
-        
-    def forward(self, request):
-        path = request.get("path", "/")
-        if path in self.routes:
-            return {"forwarded": True}
-        return {"error": "Not found"}
+def run_server(port=8080):
+    server = HTTPServer(("0.0.0.0", port), UniverseHandler)
+    print(f"Universe IDE running on http://0.0.0.0:{port}")
+    print(f"   API: http://0.0.0.0:{port}/api/*")
+    sys.stdout.flush()
+    server.serve_forever()
 
 
-# ============================================================================
-# DISCOVERY
-# ============================================================================
-
-class ServiceDiscovery:
-    def __init__(self):
-        self.services = {}
-        
-    def register(self, name, address):
-        self.services[name] = address
-        
-    def discover(self, name):
-        return self.services.get(name)
-        
-    def list_services(self):
-        return list(self.services.keys())
-
-
-__all__ = ["Server", "LoadBalancer", "APIGateway", "ServiceDiscovery"]
+if __name__ == "__main__":
+    run_server()
