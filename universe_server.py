@@ -1,170 +1,93 @@
 """
-Universe IDE - Server Mode
-
-Run Universe IDE as a server.
+Universe IDE - Server Infrastructure
 """
 
-import asyncio
-import json
-import os
-from datetime import datetime
-from typing import Any, Optional
+import uuid
+from typing import Any, Dict
 
 
 # ============================================================================
-# SERVER CONFIG
+# SERVER
 # ============================================================================
 
-class ServerConfig:
-    """Server configuration"""
-    
-    def __init__(
-        self,
-        host: str = "0.0.0.0",
-        port: int = 8080,
-        workers: int = 4,
-        debug: bool = False,
-    ):
+class Server:
+    def __init__(self, host="0.0.0.0", port=8000):
         self.host = host
         self.port = port
-        self.workers = workers
-        self.debug = debug
+        self.id = str(uuid.uuid4())[:8]
+        self.status = "stopped"
         
-    def to_dict(self) -> dict:
-        return {
-            "host": self.host,
-            "port": self.port,
-            "workers": self.workers,
-            "debug": self.debug,
-        }
+    def start(self):
+        self.status = "running"
+        return {"server": self.id, "host": self.host, "port": self.port}
+        
+    def stop(self):
+        self.status = "stopped"
+        return {"status": "stopped"}
+        
+    def restart(self):
+        self.stop()
+        return self.start()
 
 
 # ============================================================================
-# HTTP SERVER
+# LOAD BALANCER
 # ============================================================================
 
-class UniverseHTTPServer:
-    """HTTP API server"""
-    
-    def __init__(self, config: ServerConfig = None):
-        self.config = config or ServerConfig()
-        self.running = False
-        self.requests = []
+class LoadBalancer:
+    def __init__(self):
+        self.servers = []
+        self.current = 0
         
-    async def handle_request(self, path: str, data: dict) -> dict:
-        """Handle API request"""
-        self.requests.append({
-            "path": path,
-            "data": data,
-            "timestamp": datetime.now(),
-        })
+    def add_server(self, server: Server):
+        self.servers.append(server)
         
-        # Route handling
-        if path == "/api//cosmos":
-            from universe_ide import cosmos
-            num_agents = data.get("num_agents", 100)
-            universe = cosmos(num_agents)
-            return {"universe": universe.num_agents, "status": "created"}
-            
-        elif path == "/api/deploy":
-            from universe_ide import cosmos
-            universe = cosmos(data.get("agents", 10))
-            task = data.get("task", "")
-            result = universe.deploy(task)
-            return {"status": "deployed", "result": result}
-            
-        elif path == "/api/status":
-            from universe_ide import cosmos
-            universe = cosmos(10)
-            return {
-                "status": "running",
-                "agents": universe.num_agents,
-                "provider": universe.provider,
-                "model": universe.model,
-                "requests": len(self.requests),
-            }
-            
-        elif path == "/api/health":
-            return {"status": "healthy", "timestamp": datetime.now().isoformat()}
-            
+    def next_server(self) -> Server:
+        if not self.servers:
+            return None
+        server = self.servers[self.current]
+        self.current = (self.current + 1) % len(self.servers)
+        return server
+        
+    def get_active(self) -> int:
+        return len([s for s in self.servers if s.status == "running"])
+
+
+# ============================================================================
+# GATEWAY
+# ============================================================================
+
+class APIGateway:
+    def __init__(self):
+        self.routes = {}
+        self.middleware = []
+        
+    def route(self, path, server):
+        self.routes[path] = server
+        
+    def forward(self, request):
+        path = request.get("path", "/")
+        if path in self.routes:
+            return {"forwarded": True}
         return {"error": "Not found"}
-        
-    async def start(self):
-        """Start server"""
-        self.running = True
-        print(f"🪐 Universe IDE Server starting on {self.config.host}:{self.config.port}")
-        print("   API available at:")
-        print("   - POST /api/cosmos - Create universe")
-        print("   - POST /api/deploy - Deploy task")
-        print("   - GET  /api/status - Get status")
-        print("   - GET  /api/health - Health check")
-        
-    async def stop(self):
-        """Stop server"""
-        self.running = False
-        print("🪐 Universe IDE Server stopped")
 
 
 # ============================================================================
-# STANDALONE SERVER
+# DISCOVERY
 # ============================================================================
 
-class StandaloneServer:
-    """Standalone HTTP server"""
-    
-    def __init__(self, config: ServerConfig = None):
-        self.config = config or ServerConfig()
-        self.server = UniverseHTTPServer(config)
+class ServiceDiscovery:
+    def __init__(self):
+        self.services = {}
         
-    async def run(self):
-        """Run server"""
-        await self.server.start()
+    def register(self, name, address):
+        self.services[name] = address
         
-        # Simple async wait
-        try:
-            while self.server.running:
-                await asyncio.sleep(1)
-        except KeyboardInterrupt:
-            await self.server.stop()
-
-
-# ============================================================================
-# API CLIENT
-# ============================================================================
-
-class UniverseAPIClient:
-    """Client for Universe IDE API"""
-    
-    def __init__(self, base_url: str = "http://localhost:8080"):
-        self.base_url = base_url
+    def discover(self, name):
+        return self.services.get(name)
         
-    def create_universe(self, num_agents: int = 100) -> dict:
-        """Create universe via API"""
-        return {"universe": num_agents, "status": "created"}
-        
-    def deploy(self, task: str, agents: int = 10) -> dict:
-        """Deploy task via API"""
-        return {"status": "deployed", "task": task}
-        
-    def get_status(self) -> dict:
-        """Get status via API"""
-        return {"status": "running"}
-        
-    def health_check(self) -> dict:
-        """Health check via API"""
-        return {"status": "healthy"}
+    def list_services(self):
+        return list(self.services.keys())
 
 
-# ============================================================================
-# MAIN
-# ============================================================================
-
-async def start_server(config: ServerConfig = None):
-    """Start server"""
-    server = StandaloneServer(config)
-    await server.run()
-
-
-if __name__ == "__main__":
-    config = ServerConfig()
-    asyncio.run(start_server(config))
+__all__ = ["Server", "LoadBalancer", "APIGateway", "ServiceDiscovery"]
