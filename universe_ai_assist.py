@@ -306,6 +306,22 @@ class AIAssistant:
         self.optimizer = AIOptimizer()
         self.documenter = AIDocumenter()
         
+    def get_response(self, query: str) -> str:
+        """Get response to a query"""
+        # Simple response based on query keywords
+        query_lower = query.lower()
+        
+        if any(w in query_lower for w in ["fix", "bug", "error"]):
+            return "I can help fix that. Please provide the code you'd like me to analyze."
+        elif any(w in query_lower for w in ["explain", "how"]):
+            return "I can explain any code. Please provide the code."
+        elif any(w in query_lower for w in ["optimize", "fast"]):
+            return "I can optimize your code for better performance."
+        elif any(w in query_lower for w in ["analyze", "review"]):
+            return "I can analyze your code for issues and improvements."
+        else:
+            return "I'm your AI assistant. I can analyze, fix, explain, and optimize your code."
+        
     def analyze(self, code: str) -> AIResponse:
         """Analyze code"""
         complexity = self.analyzer.analyze_complexity(code)
@@ -409,4 +425,29 @@ __all__ = [
     "AIDocumenter",
     "AIAssistant",
     "get_ai_assistant",
+]
+
+
+# ============================================================================
+# AI ASSIST FUNCTION
+# ============================================================================
+
+def aiassist(query: str) -> str:
+    """AI assist - process a query and return response"""
+    assistant = get_ai_assistant()
+    return assistant.get_response(query)
+
+
+__all__ = [
+    "AIMode",
+    "AIAgent",
+    "AIAnalyzer",
+    "AITester",
+    "AIBuilder",
+    "AIReviewer",
+    "AIOptimizer",
+    "AIDocumenter",
+    "AIAssistant",
+    "get_ai_assistant",
+    "aiassist",
 ]

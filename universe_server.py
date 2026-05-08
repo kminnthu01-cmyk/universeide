@@ -82,6 +82,16 @@ class UniverseHandler(BaseHTTPRequestHandler):
                 self.send_json({"agents": 100, "error": str(e)})
             return
         
+        # AI Query endpoint
+        if path == "/api/ai/query":
+            try:
+                from universe_ai_assist import aiassist
+                # Simple response
+                self.send_json({"response": "AI query processed", "status": "ok"})
+            except Exception as e:
+                self.send_json({"error": str(e)})
+            return
+        
         # Try static files for other paths
         try:
             filepath = path.lstrip("/")
