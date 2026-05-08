@@ -1,0 +1,146 @@
+{
+  "name": "universe-ide",
+  "displayName": "Universe IDE",
+  "description": "Universe AI Agentic IDE - The universe's best AI agentic IDE",
+  "version": "2.8.0",
+  "publisher": "universe-ide",
+  "engines": {
+    "vscode": "^1.75.0"
+  },
+  "categories": [
+    "AI",
+    "Programming Languages",
+    "Snippets"
+  ],
+  "keywords": [
+    "ai",
+    "agent",
+    "ide",
+    "universe",
+    "copilot",
+    "assistant"
+  ],
+  "activationEvents": [
+    "onLanguage:python",
+    "onLanguage:javascript",
+    "onLanguage:typescript",
+    "onCommand:universe.ide.start"
+  ],
+  "main": "./extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "universe.ide.start",
+        "title": "Universe IDE: Start",
+        "description": "Start Universe IDE"
+      },
+      {
+        "command": "universe.ide.analyze",
+        "title": "Universe IDE: Analyze Code",
+        "description": "Analyze code with AI"
+      },
+      {
+        "command": "universe.ide.fix",
+        "title": "Universe IDE: Fix Issues",
+        "description": "Auto-fix code issues"
+      },
+      {
+        "command": "universe.ide.explain",
+        "title": "Universe IDE: Explain",
+        "description": "Explain selected code"
+      },
+      {
+        "command": "universe.ide.generate",
+        "title": "Universe IDE: Generate",
+        "description": "Generate code from prompt"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "universe.ide.start",
+        "key": "ctrl+shift+u",
+        "mac": "cmd+shift+u"
+      },
+      {
+        "command": "universe.ide.analyze",
+        "key": "ctrl+shift+a",
+        "mac": "cmd+shift+a"
+      },
+      {
+        "command": "universe.ide.explain",
+        "key": "ctrl+shift+e",
+        "mac": "cmd+shift+e"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "universe.ide.analyze",
+          "when": "editorHasSelection",
+          "group": "universe"
+        },
+        {
+          "command": "universe.ide.fix",
+          "when": "editorHasSelection",
+          "group": "universe"
+        },
+        {
+          "command": "universe.ide.explain",
+          "when": "editorHasSelection",
+          "group": "universe"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "universe.ide.start",
+          "group": "universe"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Universe IDE",
+      "properties": {
+        "universe.ide.provider": {
+          "type": "string",
+          "default": "anthropic",
+          "enum": ["anthropic", "openai", "google"],
+          "description": "AI Provider"
+        },
+        "universe.ide.model": {
+          "type": "string",
+          "default": "claude-sonnet-4-20250505",
+          "description": "AI Model"
+        },
+        "universe.ide.maxAgents": {
+          "type": "number",
+          "default": 100,
+          "description": "Maximum parallel agents"
+        },
+        "universe.ide.autocomplete": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable AI autocomplete"
+        },
+        "universe.ide.inlineSuggest": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable inline suggestions"
+        }
+      }
+    },
+    "snippets": [
+      {
+        "language": "python",
+        "path": "./snippets/python.json"
+      },
+      {
+        "language": "javascript",
+        "path": "./snippets/javascript.json"
+      },
+      {
+        "language": "typescript",
+        "path": "./snippets/typescript.json"
+      }
+    ]
+  }
+}

@@ -1,0 +1,17 @@
+{
+    "Universe cosmos": {
+        "prefix": "cosmos",
+        "body": "from universe_ide import cosmos\n\nuniverse = cosmos(${1:100})",
+        "description": "Create Universe IDE with agents"
+    },
+    "Universe AI": {
+        "prefix": "uai",
+        "body": "from universe_ai_assist import get_ai_assistant\n\nai = get_ai_assistant()",
+        "description": "Get AI assistant"
+    },
+    "Universe analyze": {
+        "prefix": "uanalyze",
+        "body": "from universe_intelligent import get_intelligence\n\nci = get_intelligence()\nsuggestions = ci.analyze(${1:code})",
+        "description": "Analyze code"
+    }
+}

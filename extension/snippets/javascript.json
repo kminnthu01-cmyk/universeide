@@ -1,0 +1,7 @@
+{
+    "Universe start": {
+        "prefix": "universe",
+        "body": "const { cosmos } = require('universe-ide');\n\nconst universe = cosmos(${1:100});",
+        "description": "Create Universe IDE"
+    }
+}
