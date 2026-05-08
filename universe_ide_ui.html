@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🪐 Universe IDE</title>
+<style>
+:root {
+  --bg: #0a0a1a;
+  --surface: #12122a;
+  --primary: #7c3aed;
+  --secondary: #1e1e3a;
+  --text: #e0e0ff;
+  --accent: #a78bfa;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --error: #ef4444;
+  --border: #2a2a4a;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', -apple-system, sans-serif;
+  height: 100vh;
+  overflow: hidden;
+}
+.app { display: flex; height: 100vh; flex-direction: column; }
+
+/* Header */
+.header {
+  background: var(--surface);
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  border-bottom: 1px solid var(--border);
+}
+.logo { font-size: 20px; }
+.menu { display: flex; gap: 8px; }
+.menu-btn {
+  background: transparent;
+  border: none;
+  color: var(--text);
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.menu-btn:hover { background: var(--secondary); }
+
+/* Main */
+.main { display: flex; flex: 1; overflow: hidden; }
+
+/* Sidebar */
+.sidebar {
+  width: 240px;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+}
+.sidebar-header {
+  padding: 12px;
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+  color: #888;
+}
+.file-item {
+  padding: 6px 12px;
+  cursor: pointer;
+  display: flex;
+  gap: 8px;
+  font-size: 13px;
+}
+.file-item:hover { background: var(--secondary); }
+.file-item.active { background: var(--primary); }
+
+/* Editor */
+.editor {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.tabs {
+  display: flex;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+.tab {
+  padding: 8px 16px;
+  font-size: 13px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.tab.active {
+  background: var(--bg);
+  border-bottom: 2px solid var(--primary);
+}
+.code-area {
+  flex: 1;
+  background: var(--bg);
+  padding: 16px;
+  font-family: 'Fira Code', monospace;
+  font-size: 14px;
+  line-height: 1.6;
+  overflow: auto;
+}
+.line { display: flex; }
+.ln {
+  color: #555;
+  min-width: 40px;
+  user-select: none;
+}
+.keyword { color: #c678dd; }
+.string { color: #98c379; }
+.function { color: #61afef; }
+.comment { color: #5c6370; font-style: italic; }
+
+/* Terminal */
+.terminal {
+  height: 200px;
+  background: #0a0a0a;
+  border-top: 1px solid var(--border);
+  padding: 12px;
+  font-family: 'Fira Code', monospace;
+  font-size: 13px;
+}
+.terminal-line { color: #10b981; }
+.prompt { color: #7c3aed; }
+
+/* Status */
+.status-bar {
+  background: var(--primary);
+  padding: 4px 12px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+}
+
+/* Command Palette */
+.command-palette {
+  position: fixed;
+  top: 100px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 500px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 16px 48px rgba(0,0,0,0.5);
+  display: none;
+}
+.command-palette.show { display: block; }
+.search-input {
+  width: 100%;
+  padding: 12px 16px;
+  background: transparent;
+  border: none;
+  color: var(--text);
+  font-size: 14px;
+  outline: none;
+}
+.results { max-height: 300px; overflow: auto; }
+.result-item {
+  padding: 10px 16px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+}
+.result-item:hover, .result-item.selected {
+  background: var(--secondary);
+}
+.shortcut {
+  background: var(--secondary);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 11px;
+}
+
+/* Toast */
+.toast-container {
+  position: fixed;
+  bottom: 40px;
+  right: 16px;
+}
+.toast {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 12px 16px;
+  margin-top: 8px;
+  border-radius: 4px;
+  animation: slideIn 0.3s ease;
+}
+@keyframes slideIn {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- Header -->
+  <header class="header">
+    <span class="logo">🪐 Universe IDE</span>
+    <nav class="menu">
+      <button class="menu-btn">File</button>
+      <button class="menu-btn">Edit</button>
+      <button class="menu-btn">View</button>
+      <button class="menu-btn">Run</button>
+      <button class="menu-btn">Git</button>
+    </nav>
+  </header>
+  
+  <div class="main">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">Explorer</div>
+      <div class="file-item">📁 src</div>
+      <div class="file-item">📁 tests</div>
+      <div class="file-item">📄 main.py</div>
+      <div class="file-item active">📄 universe_ide.py</div>
+    </aside>
+    
+    <!-- Editor -->
+    <main class="editor">
+      <div class="tabs">
+        <div class="tab active">
+          <span>universe_ide.py</span>
+          <span>×</span>
+        </div>
+        <div class="tab">+</div>
+      </div>
+      <div class="code-area">
+        <div class="line"><span class="ln">1</span><span class="keyword">from</span> typing <span class="keyword">import</span> List</div>
+        <div class="line"><span class="ln">2</span></div>
+        <div class="line"><span class="ln">3</span></div>
+        <div class="line"><span class="ln">4</span><span class="keyword">class</span> <span class="function">UniverseIDE</span>:</div>
+        <div class="line"><span class="ln">5</span>    <span class="keyword">def</span> <span class="function">__init__</span>(self):</div>
+        <div class="line"><span class="ln">6</span>        self.agents = []</div>
+        <div class="line"><span class="ln">7</span>        </div>
+        <div class="line"><span class="ln">8</span>    <span class="keyword">def</span> <span class="function">cosmos</span>(self, n: int):</div>
+        <div class="line"><span class="ln">9</span>        <span class="string">f"Created {n} parallel AI agents"</span></div>
+        <div class="line"><span class="ln">10</span></div>
+      </div>
+    </main>
+  </div>
+  
+  <!-- Terminal -->
+  <div class="terminal">
+    <div class="terminal-line"><span class="prompt">$</span> universe --agents 1000</div>
+    <div class="terminal-line">✓ Created 1000 parallel AI agents</div>
+    <div class="terminal-line"><span class="prompt">$</span> _</div>
+  </div>
+  
+  <!-- Status Bar -->
+  <footer class="status-bar">
+    <span>🪐 Universe IDE v3.4</span>
+    <span>Python • 1000 agents • UTF-8</span>
+  </footer>
+</div>
+
+<!-- Command Palette -->
+<div class="command-palette show" id="palette">
+  <input class="search-input" placeholder="Type a command..." autofocus>
+</div>
+
+<script>
+// Command palette
+const palette = document.getElementById('palette');
+document.addEventListener('keydown', (e) => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
+    e.preventDefault();
+    palette.classList.toggle('show');
+  }
+});
+
+// Toast notifications
+function showToast(message, type = 'info') {
+  const container = document.querySelector('.toast-container') || createToastContainer();
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type}`;
+  toast.textContent = message;
+  container.appendChild(toast);
+  setTimeout(() => toast.remove(), 3000);
+}
+
+function createToastContainer() {
+  const div = document.createElement('div');
+  div.className = 'toast-container';
+  document.body.appendChild(div);
+  return div;
+}
+
+// Load complete
+console.log('🪐 Universe IDE loaded');
+</script>
+</body>
+</html>
