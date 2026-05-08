@@ -226,4 +226,4 @@ def save_docs():
 
 
 if __name__ == "__main__":
-    save_docs()
+    save_docs()__all__ = []
