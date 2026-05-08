@@ -110,6 +110,26 @@ class UniverseHandler(BaseHTTPRequestHandler):
                 self.send_json({"error": str(e)})
             return
         
+        # DB endpoint
+        if path == "/api/db":
+            try:
+                from universe_db import get_database
+                d = get_database()
+                self.send_json({"database": "sqlite", "tables": ["agents", "messages", "knowledge"]})
+            except Exception as e:
+                self.send_json({"error": str(e)})
+            return
+        
+        # Cloud endpoint
+        if path == "/api/cloud":
+            try:
+                from universe_cloud import get_cloud
+                c = get_cloud()
+                self.send_json({"cloud": "aws", "regions": ["us-east-1", "us-west-2"]})
+            except Exception as e:
+                self.send_json({"error": str(e)})
+            return
+        
         # Try static files for other paths
         try:
             filepath = path.lstrip("/")
