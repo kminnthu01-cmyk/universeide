@@ -24,6 +24,12 @@ except ImportError:
     def get_swarm():
         return type('S', (), {'get_status': lambda: {'agents': 100}})()
 
+try:
+    from universe_metrics import get_metrics
+except ImportError:
+    def get_metrics():
+        return type('M', (), {'get_cpu': lambda: {'avg': 0}, 'get_memory': lambda: {'avg': 0}})()
+
 
 # ============================================================================
 # HANDLER
@@ -88,6 +94,18 @@ class UniverseHandler(BaseHTTPRequestHandler):
                 from universe_ai_assist import aiassist
                 # Simple response
                 self.send_json({"response": "AI query processed", "status": "ok"})
+            except Exception as e:
+                self.send_json({"error": str(e)})
+            return
+        
+        # Metrics endpoint
+        if path == "/api/metrics":
+            try:
+                m = get_metrics()
+                self.send_json({
+                    "cpu": m.get_cpu(),
+                    "memory": m.get_memory(),
+                })
             except Exception as e:
                 self.send_json({"error": str(e)})
             return
